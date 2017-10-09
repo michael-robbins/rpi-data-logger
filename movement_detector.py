@@ -42,12 +42,11 @@ def movement_detected():
                     new += 360
 
             if not lower_bound < new < upper_bound:
-                print("{0}: {1} < {2} < {3}".format(name, lower_bound, new, upper_bound))
                 last_movement = this_movement
-                return True
+                return "{0}: {1} < {2} < {3}".format(name, lower_bound, new, upper_bound)
 
     last_movement = this_movement
-    return False
+    return None
 
 def raise_sns_alarm(topic, location):
     client = boto3.client("sns")
@@ -78,7 +77,7 @@ if __name__ == "__main__":
     else:
         fh = logging.StreamHandler(sys.stdout)
 
-    log_format = "time='%(asctime)s' message='%(message)s'"
+    log_format = "time='%(asctime)s' message='%(message)s' result='%(result)s'"
     date_format = "%Y-%m-%dT%H:%M:%S"
     formatter = logging.Formatter(fmt=log_format, datefmt=date_format)
     fh.setFormatter(formatter)
@@ -87,12 +86,12 @@ if __name__ == "__main__":
     monitoring = True
     alarm_active = False
 
-    logger.info("Beginning movement detection")
+    logger.info("Beginning movement detection", extra={"result": None})
     while monitoring:
         result = movement_detected()
 
         if result and not alarm_active:
-            logger.error("Movement detected!")
+            logger.error("Movement detected!", extra={"result": result})
             alarm_active = True
 
             if args.sns_topic:
