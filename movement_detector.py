@@ -48,12 +48,12 @@ def movement_detected():
     last_movement = this_movement
     return None
 
-def raise_sns_alarm(topic, location):
+def raise_sns_alarm(topic, location, subject):
     client = boto3.client("sns")
 
     message = "Movement detected in {0}".format(location)
 
-    client.publish(TopicArn=topic, Message=message)
+    client.publish(TopicArn=topic, Subject=subject, Message=message)
 
 if __name__ == "__main__":
     sense = SenseHat()
@@ -62,6 +62,7 @@ if __name__ == "__main__":
     parser.add_argument("--log-filename")
     parser.add_argument("--sns-topic")
     parser.add_argument("--location", default="Raspberry Pi")
+    parser.add_argument("--sns-subject", default="Movement Detected!")
     args = parser.parse_args()
 
     # Configure logging
@@ -95,7 +96,7 @@ if __name__ == "__main__":
             alarm_active = True
 
             if args.sns_topic:
-                raise_sns_alarm(args.sns_topic, args.location)
+                raise_sns_alarm(args.sns_topic, args.location, args.sns_subject)
 
         elif not result:
             alarm_active = False
